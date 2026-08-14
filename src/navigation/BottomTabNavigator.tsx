@@ -6,7 +6,7 @@ import { colors } from '../theme/colors';
 import ProjectsListScreen from '../screens/projects/ProjectsListScreen';
 import ContactPMScreen from '../screens/contact/ContactPMScreen';
 import ChainOfCustodyScreen from '../screens/coc/ChainOfCustodyScreen';
-import SuppliesScreen from '../screens/supplies/SuppliesScreen';
+import MoreScreen from '../screens/more/MoreScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -65,12 +65,12 @@ export default function BottomTabNavigator() {
       />
 
       <Tab.Screen
-        name="SampleMedia"
-        component={SuppliesScreen}
+        name="More"
+        component={MoreScreen}
         options={{
-          tabBarLabel: 'Sample Media',
+          tabBarLabel: 'More',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="beaker-outline" size={size} color={color} />
+            <Ionicons name="ellipsis-horizontal-outline" size={size} color={color} />
           ),
         }}
       />

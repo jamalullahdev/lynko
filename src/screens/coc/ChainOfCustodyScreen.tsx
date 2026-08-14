@@ -33,15 +33,13 @@ export default function ChainOfCustodyScreen({ navigation }: any) {
   const submitCurrentReport = useAppStore((state) => state.submitCurrentReport);
 
   // Modals state
+  const [editSamplesVisible, setEditSamplesVisible] = useState(false);
   const [editContactsVisible, setEditContactsVisible] = useState(false);
   const [courierSigVisible, setCourierSigVisible] = useState(false);
   const [termsVisible, setTermsVisible] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [notesModalSampleId, setNotesModalSampleId] = useState<string | null>(null);
   const [tempNotes, setTempNotes] = useState('');
-
-  // Sample Cassette Picker Modal State
-  const [mediaPickerSampleId, setMediaPickerSampleId] = useState<string | null>(null);
 
   const sigRef = useRef<any>(null);
 
@@ -292,111 +290,29 @@ export default function ChainOfCustodyScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* SECTION 4: SAMPLES MANIFEST EDITOR (Screenshot 2 & Screenshot 5) */}
+        {/* SECTION 4: SAMPLES (Matching Screenshot 4 - Edit Samples > Button) */}
         <View style={styles.card}>
           <View style={styles.cardHeaderRow}>
-            <Text style={styles.sectionTitle}>Samples ({currentReport.samples.length})</Text>
-            <Text style={styles.summaryBadge}>Asbestos PLM • Next-day rush</Text>
+            <Text style={styles.sectionTitle}>Samples</Text>
+            <TouchableOpacity
+              style={styles.editSamplesLinkRow}
+              onPress={() => setEditSamplesVisible(true)}
+            >
+              <Text style={styles.linkText}>Edit Samples</Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+            </TouchableOpacity>
           </View>
 
-          {currentReport.samples.map((item) => (
-            <View key={item.id} style={styles.sampleBox}>
-              <View style={styles.sampleTopRow}>
-                <Text style={styles.sampleIdTitle}>Sample ID  {item.sampleId}</Text>
-                <TouchableOpacity onPress={() => removeSample(item.id)}>
-                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                </TouchableOpacity>
-              </View>
-
-              {/* Sample Media / Cassette Selector (Screenshot 5 integration) */}
-              <TouchableOpacity
-                style={styles.cassetteSelectorBtn}
-                onPress={() => setMediaPickerSampleId(item.id)}
-              >
-                <Ionicons name="beaker-outline" size={18} color={colors.primary} />
-                <Text style={styles.cassetteSelectorText}>
-                  Media: <Text style={{ fontWeight: '700' }}>{item.sampleType || 'Select Cassette Type'}</Text>
-                </Text>
-                <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
-              </TouchableOpacity>
-
-              {/* Analysis 1 & 2 Toggles (Screenshot 2) */}
-              <View style={styles.togglesRow}>
-                <View style={styles.toggleGroup}>
-                  <Text style={styles.toggleLabel}>Analysis 1:</Text>
-                  <Switch
-                    value={item.analysis1}
-                    onValueChange={(val) => updateSample(item.id, { analysis1: val })}
-                    trackColor={{ false: colors.border, true: colors.primary }}
-                  />
-                </View>
-
-                <View style={styles.toggleGroup}>
-                  <Text style={styles.toggleLabel}>Analysis 2:</Text>
-                  <Switch
-                    value={item.analysis2}
-                    onValueChange={(val) => updateSample(item.id, { analysis2: val })}
-                    trackColor={{ false: colors.border, true: colors.primary }}
-                  />
-                </View>
-              </View>
-
-              <FormInput
-                label="Description"
-                placeholder="e.g. Bedroom Drywall"
-                value={item.description}
-                onChangeText={(v) => updateSample(item.id, { description: v })}
-              />
-
-              <View style={styles.rowTwoCols}>
-                <View style={{ flex: 0.48 }}>
-                  <FormInput
-                    label="Property"
-                    placeholder="None"
-                    value={item.property}
-                    onChangeText={(v) => updateSample(item.id, { property: v })}
-                  />
-                </View>
-
-                <View style={{ flex: 0.48 }}>
-                  <FormInput
-                    label="Measurement"
-                    placeholder="0 N/A"
-                    value={`${item.measurement} ${item.measurementUnit}`}
-                    onChangeText={(v) => updateSample(item.id, { measurement: v })}
-                  />
-                </View>
-              </View>
-
-              {/* Notes & Photo Attachments */}
-              <View style={styles.notesRow}>
-                {item.notes ? (
-                  <Text style={styles.sampleNotesText}>Notes: {item.notes}</Text>
-                ) : (
-                  <TouchableOpacity onPress={() => {
-                    setNotesModalSampleId(item.id);
-                    setTempNotes('');
-                  }}>
-                    <Text style={styles.linkText}>+ Add notes</Text>
-                  </TouchableOpacity>
-                )}
-
-                <TouchableOpacity style={styles.photoAttachBtn} onPress={() => handlePickPhoto(item.id)}>
-                  <Ionicons name="camera-outline" size={16} color={colors.primary} />
-                  <Text style={styles.photoAttachText}>
-                    {item.photoUri ? 'Change Photo' : 'Attach Photo'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {item.photoUri && (
-                <Image source={{ uri: item.photoUri }} style={styles.sampleThumb} />
-              )}
+          {/* Summary Box (Screenshot 4) */}
+          <TouchableOpacity
+            style={styles.samplesSummaryBox}
+            onPress={() => setEditSamplesVisible(true)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.summaryTextBold}>{currentReport.samples.length} Logged Samples</Text>
+              <Text style={styles.summaryTextSub}>Asbestos PLM • Next-day rush</Text>
             </View>
-          ))}
-
-          <TouchableOpacity style={styles.addSamplesBtn} onPress={handleAddSampleRow}>
-            <Text style={styles.addSamplesBtnText}>+ Add Samples</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
 
@@ -477,29 +393,107 @@ export default function ChainOfCustodyScreen({ navigation }: any) {
 
       </ScrollView>
 
-      {/* MODAL 1: CASSETTE / SAMPLE MEDIA PICKER (Screenshot 5 Integration) */}
-      <Modal visible={mediaPickerSampleId !== null} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={typography.h2}>Select Sampling Media / Cassette</Text>
-              <TouchableOpacity onPress={() => setMediaPickerSampleId(null)}>
-                <Ionicons name="close" size={24} color={colors.textPrimary} />
-              </TouchableOpacity>
-            </View>
+      {/* MODAL 1: EDIT SAMPLES MODAL (Matching Screenshot 2 & Screenshot 5) */}
+      <Modal visible={editSamplesVisible} animationType="slide" transparent={false}>
+        <View style={styles.container}>
+          <Header
+            title="Edit Samples"
+            subtitle={`${currentReport.samples.length} Samples Logged`}
+          />
 
-            <ScrollView style={{ maxHeight: 380 }}>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            
+            {/* SAMPLE ITEMS LIST (Screenshot 2) */}
+            {currentReport.samples.map((item) => (
+              <View key={item.id} style={styles.sampleBox}>
+                <View style={styles.sampleTopRow}>
+                  <Text style={styles.sampleIdTitle}>Sample ID  {item.sampleId}</Text>
+                  <TouchableOpacity onPress={() => removeSample(item.id)}>
+                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Analysis 1 & 2 Toggles */}
+                <View style={styles.togglesRow}>
+                  <View style={styles.toggleGroup}>
+                    <Text style={styles.toggleLabel}>Analysis 1:</Text>
+                    <Switch
+                      value={item.analysis1}
+                      onValueChange={(val) => updateSample(item.id, { analysis1: val })}
+                      trackColor={{ false: colors.border, true: colors.primary }}
+                    />
+                  </View>
+
+                  <View style={styles.toggleGroup}>
+                    <Text style={styles.toggleLabel}>Analysis 2:</Text>
+                    <Switch
+                      value={item.analysis2}
+                      onValueChange={(val) => updateSample(item.id, { analysis2: val })}
+                      trackColor={{ false: colors.border, true: colors.primary }}
+                    />
+                  </View>
+                </View>
+
+                <FormInput
+                  label="Description"
+                  placeholder="e.g. Bedroom Drywall"
+                  value={item.description}
+                  onChangeText={(v) => updateSample(item.id, { description: v })}
+                />
+
+                <View style={styles.rowTwoCols}>
+                  <View style={{ flex: 0.48 }}>
+                    <FormInput
+                      label="Property"
+                      placeholder="None"
+                      value={item.property}
+                      onChangeText={(v) => updateSample(item.id, { property: v })}
+                    />
+                  </View>
+
+                  <View style={{ flex: 0.48 }}>
+                    <FormInput
+                      label="Measurement"
+                      placeholder="0 N/A"
+                      value={`${item.measurement} ${item.measurementUnit}`}
+                      onChangeText={(v) => updateSample(item.id, { measurement: v })}
+                    />
+                  </View>
+                </View>
+
+                {/* Notes & Photo Attachments */}
+                <View style={styles.notesRow}>
+                  {item.notes ? (
+                    <Text style={styles.sampleNotesText}>Notes: {item.notes}</Text>
+                  ) : (
+                    <TouchableOpacity onPress={() => {
+                      setNotesModalSampleId(item.id);
+                      setTempNotes('');
+                    }}>
+                      <Text style={styles.linkText}>+ Add notes</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  <TouchableOpacity style={styles.photoAttachBtn} onPress={() => handlePickPhoto(item.id)}>
+                    <Ionicons name="camera-outline" size={16} color={colors.primary} />
+                    <Text style={styles.photoAttachText}>
+                      {item.photoUri ? 'Change Photo' : 'Attach Photo'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {item.photoUri && (
+                  <Image source={{ uri: item.photoUri }} style={styles.sampleThumb} />
+                )}
+              </View>
+            ))}
+
+            {/* SAMPLING MEDIA & CASSETTES CATALOG WITH +/- COUNTERS (Screenshot 5) */}
+            <View style={[styles.card, { marginTop: 10 }]}>
+              <Text style={styles.sectionTitle}>Sampling Equipment & Cassettes</Text>
+
               {SAMPLE_MEDIA_TYPES.map((media) => (
-                <TouchableOpacity
-                  key={media.id}
-                  style={styles.mediaOptionRow}
-                  onPress={() => {
-                    if (mediaPickerSampleId) {
-                      updateSample(mediaPickerSampleId, { sampleType: media.name });
-                    }
-                    setMediaPickerSampleId(null);
-                  }}
-                >
+                <View key={media.id} style={styles.mediaItemRow}>
                   <View style={styles.mediaIconCircle}>
                     <Ionicons name={media.icon as any} size={22} color={colors.primary} />
                   </View>
@@ -507,11 +501,58 @@ export default function ChainOfCustodyScreen({ navigation }: any) {
                     <Text style={typography.bodyBold}>{media.name}</Text>
                     <Text style={typography.caption}>{media.category}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-                </TouchableOpacity>
+
+                  <View style={styles.counterRow}>
+                    <TouchableOpacity
+                      style={styles.counterBtn}
+                      onPress={() => {
+                        const existing = currentReport.samples.find((s) => s.sampleType === media.name);
+                        if (existing) removeSample(existing.id);
+                      }}
+                    >
+                      <Text style={styles.counterBtnText}>-</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.countBox}>
+                      <Text style={styles.countText}>
+                        {currentReport.samples.filter((s) => s.sampleType === media.name).length}
+                      </Text>
+                    </View>
+
+                    <TouchableOpacity
+                      style={[styles.counterBtn, styles.plusBtn]}
+                      onPress={() => {
+                        const nextNum = (currentReport.samples.length + 13).toString();
+                        addSample({
+                          id: Math.random().toString(),
+                          sampleId: nextNum,
+                          sampleType: media.name,
+                          analysis1: true,
+                          analysis2: false,
+                          description: `${media.name} Sample`,
+                          property: 'None',
+                          measurement: '0',
+                          measurementUnit: 'N/A',
+                        });
+                      }}
+                    >
+                      <Text style={[styles.counterBtnText, styles.plusBtnText]}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               ))}
-            </ScrollView>
-          </View>
+            </View>
+
+            <TouchableOpacity style={styles.addSamplesBtn} onPress={handleAddSampleRow}>
+              <Text style={styles.addSamplesBtnText}>+ Add Samples</Text>
+            </TouchableOpacity>
+
+            <GradientButton
+              title="Save & Done"
+              onPress={() => setEditSamplesVisible(false)}
+              style={{ marginTop: 16 }}
+            />
+          </ScrollView>
         </View>
       </Modal>
 
@@ -683,6 +724,29 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '600',
   },
+  editSamplesLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  samplesSummaryBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.inputBg,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  summaryTextBold: {
+    ...typography.bodyBold,
+    color: colors.textPrimary,
+  },
+  summaryTextSub: {
+    ...typography.caption,
+    color: colors.primary,
+    marginTop: 2,
+    fontWeight: '600',
+  },
   linkTextInline: {
     color: colors.primary,
     textDecorationLine: 'underline',
@@ -720,15 +784,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 10,
   },
-  summaryBadge: {
-    ...typography.caption,
-    color: colors.primaryDark,
-    backgroundColor: 'rgba(3, 193, 182, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    fontWeight: '600',
-  },
   sampleBox: {
     backgroundColor: colors.inputBg,
     borderRadius: 12,
@@ -747,22 +802,6 @@ const styles = StyleSheet.create({
     ...typography.h3,
     fontSize: 16,
     color: colors.textPrimary,
-  },
-  cassetteSelectorBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 10,
-  },
-  cassetteSelectorText: {
-    ...typography.subhead,
-    flex: 1,
-    marginLeft: 8,
   },
   togglesRow: {
     flexDirection: 'row',
@@ -805,6 +844,56 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 8,
   },
+  mediaItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  mediaIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: 'rgba(3, 193, 182, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  counterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  counterBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.inputBg,
+  },
+  counterBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  plusBtn: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  plusBtnText: {
+    color: colors.white,
+  },
+  countBox: {
+    width: 30,
+    alignItems: 'center',
+  },
+  countText: {
+    ...typography.bodyBold,
+    fontSize: 14,
+  },
   addSamplesBtn: {
     alignItems: 'center',
     paddingVertical: 12,
@@ -812,7 +901,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     borderRadius: 12,
     borderStyle: 'dashed',
-    marginTop: 4,
+    marginTop: 12,
   },
   addSamplesBtnText: {
     ...typography.button,
@@ -878,22 +967,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-  },
-  mediaOptionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  mediaIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 8,
-    backgroundColor: 'rgba(3, 193, 182, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
   },
   termsBodyText: {
     ...typography.body,
